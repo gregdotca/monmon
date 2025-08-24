@@ -98,7 +98,7 @@ _Ignore the video quality, it's absolutely awful!_
   - You can probably use other operating systems, but this is all that's been fully
   tested. The 64-bit version of Raspberry Pi OS should also work, though its performance
   on a Raspberry Pi Zero was not great. 
-- Run from anywhere: `git clone https://github.com/monmon-io/monmon.git`
+- Run from anywhere: `git clone https://github.com/gregdotca/monmon.git`
 - Change into the monmon folder
 - At the very least you should now create a custom Node file, but you can also create
 custom monmon and Monit configuration files if you want to. See further down in the 
