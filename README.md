@@ -112,6 +112,17 @@ instance of Monit running on your monmon Raspberry Pi, so it won't be very usefu
   script will do that for you, though if the Ansible installation fails you may need to
   [install it manually][].
 - Further information will be given on-screen after the installation is complete
+- If you'd rather run the Ansible playbook yourself instead of using install.sh, first
+copy any custom configuration files you created into the `ansible` folder with the names
+the playbook looks for (`config` to `ansible/config.custom.j2`, `include.alert_off` to
+`ansible/include.alert_off.custom.j2`, `include.alert_on` to
+`ansible/include.alert_on.custom.j2`, `monit` to `ansible/monit.custom.j2`, and `nodes`
+to `ansible/nodes.custom.j2`), as install.sh does. Then run the playbook from the
+`ansible` folder and pass the Pi's IP address and the HDMI display method
+(none, cli, or gui) as extra variables, for example:
+`ansible-playbook -i ./inventory-install ./install.yml -e "monmon_ip_address=192.168.1.50" -e "installation_type=none"`.
+The IP address is required, and the playbook stops with an undefined variable error
+without it. The display method defaults to none.
 
 # Configuration Files
 
@@ -194,7 +205,7 @@ upr:::::Main UptimeRobot Account:::::dj3fsjh8df-kdk993ijkosf8838kskdldkdk38
 
 # License
 monmon -- Monitor your monitoring with a Raspberry Pi  
-Copyright (c) 2024 Greg Chetcuti <greg@chetcuti.com>
+Copyright (c) 2022-2026 Greg Chetcuti <greg@chetcuti.com>
 
 monmon is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 

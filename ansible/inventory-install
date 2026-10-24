@@ -1,8 +1,8 @@
 [servers]
-monmon          ansible_host=:::::RASPBERRY_PI_IP_ADDRESS:::::           hostname=monmon
+monmon          ansible_host="{{ monmon_ip_address }}"           hostname=monmon
 
 [sites]
-monmon          ansible_host=:::::RASPBERRY_PI_IP_ADDRESS:::::           hostname=monmon
+monmon          ansible_host="{{ monmon_ip_address }}"           hostname=monmon
 
 [servers:vars]
 ansible_python_interpreter=/usr/bin/python3

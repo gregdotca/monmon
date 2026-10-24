@@ -1,7 +1,8 @@
 ---
 # monmon installation type
 # none (no automatic UI) or cli (lynx) or gui (midori)
-installation_type: :::::RASPBERRY_PI_MONITOR_STARTUP_TYPE:::::
+# install.sh sets this from its prompt
+installation_type: none
 
 # The command that gets run after the cli user is automatically logged in
 cli_initialization_command: watch -n 10 lynx -dump http://127.0.0.1

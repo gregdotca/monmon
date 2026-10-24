@@ -21,7 +21,13 @@ while true; do
 done
 echo ""
 echo ""
-read -p "What is the IP address of your Raspberry Pi? (xxx.xxx.xxx.xxx): " ip_address
+while true; do
+    read -p "What is the IP address of your Raspberry Pi? (xxx.xxx.xxx.xxx): " ip_address
+    if [[ $ip_address =~ ^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$ ]]; then
+        break
+    fi
+    echo ""; echo "Please enter a valid IPv4 address"; echo ""
+done
 echo ""
 echo ""
 echo "NOTE: Both the GUI and CLI methods mentioned below are experimental"
@@ -84,10 +90,7 @@ fi
 echo ""
 echo "# Run Ansible playbook to deploy monmon to Raspberry Pi"
 cd ansible
-sed -i "s/:::::RASPBERRY_PI_IP_ADDRESS:::::/$ip_address/g" inventory-install
-sed -i "s/:::::RASPBERRY_PI_IP_ADDRESS:::::/$ip_address/g" roles/monmon/templates/nodes.j2
-sed -i "s/:::::RASPBERRY_PI_MONITOR_STARTUP_TYPE:::::/$startup_type/g" group_vars/all.yml
-ansible-playbook -i ./inventory-install ./install.yml
+ansible-playbook -i ./inventory-install ./install.yml -e "{\"monmon_ip_address\": \"$ip_address\", \"installation_type\": \"$startup_type\"}"
 cd ..
 echo ""
 echo ""
