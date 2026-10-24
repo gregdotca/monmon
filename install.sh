@@ -63,9 +63,9 @@ sudo apt update
 echo ""
 echo ""
 echo "# Install Ansible and prerequisites on local system"
-echo "# Packages: ansible, sshpass"
+echo "# Packages: ansible, sshpass, python3-passlib"
 echo ""
-sudo apt install ansible sshpass -y
+sudo apt install ansible sshpass python3-passlib -y
 echo ""
 if [[ -f config ]]
 then
@@ -89,8 +89,13 @@ then
 fi
 echo ""
 echo "# Run Ansible playbook to deploy monmon to Raspberry Pi"
+echo ""
+echo "Ansible will ask for the pi user's current password on your Raspberry Pi (SSH
+password), and then for an optional new password for the pi user. Leave the new password
+blank to keep the current one. Neither password is saved anywhere on this system."
+echo ""
 cd ansible
-ansible-playbook -i ./inventory-install ./install.yml -e "{\"monmon_ip_address\": \"$ip_address\", \"installation_type\": \"$startup_type\"}"
+ansible-playbook --ask-pass -i ./inventory-install ./install.yml -e "{\"monmon_ip_address\": \"$ip_address\", \"installation_type\": \"$startup_type\"}"
 cd ..
 echo ""
 echo ""

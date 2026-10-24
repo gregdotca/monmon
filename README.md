@@ -96,7 +96,8 @@ _Ignore the video quality, it's absolutely awful!_
 
 # Installation
 - Flash Raspberry Pi OS lite 32-bit onto an SD card of at least 16GB
-  - Must use pi / raspberry credentials
+  - Create a user named pi with a password of your choice and turn on SSH (Raspberry Pi
+  Imager's OS customisation settings can do both)
   - You can probably use other operating systems, but this is all that's been fully
   tested. The 64-bit version of Raspberry Pi OS should also work, though its performance
   on a Raspberry Pi Zero was not great. 
@@ -108,6 +109,11 @@ README for more information.
 - If you don't create a custom Node file, the only node that will be monitored is the
 instance of Monit running on your monmon Raspberry Pi, so it won't be very useful.
 - Run: `./install.sh` and follow the prompts
+  - Ansible will ask for the pi user's current password on the Raspberry Pi (the SSH
+  password), and then for an optional new password for the pi user, which you'll be asked
+  to type twice. Leave it blank to keep the current password. If you set a new one, it's
+  changed at the very end of the install, so use the new password the next time you run
+  install.sh. Neither password is stored in the repository or on your local system.
   - **NOTE:** The installation process needs [Ansible][] installed on the local system (the
   one you cloned the git repository to), as the entire monmon system is installed and
   setup using Ansible. You don't need to install Ansible on your own though, the install
@@ -122,9 +128,10 @@ the playbook looks for (`config` to `ansible/config.custom.j2`, `include.alert_o
 to `ansible/nodes.custom.j2`), as install.sh does. Then run the playbook from the
 `ansible` folder and pass the Pi's IP address and the HDMI display method
 (none, cli, or gui) as extra variables, for example:
-`ansible-playbook -i ./inventory-install ./install.yml -e "monmon_ip_address=192.168.1.50" -e "installation_type=none"`.
+`ansible-playbook --ask-pass -i ./inventory-install ./install.yml -e "monmon_ip_address=192.168.1.50" -e "installation_type=none"`.
 The IP address is required, and the playbook stops with an undefined variable error
-without it. The display method defaults to none.
+without it. The display method defaults to none. `--ask-pass` makes Ansible ask for the pi
+user's SSH password, and the playbook then asks for the optional new password.
 
 # Configuration Files
 

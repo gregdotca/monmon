@@ -2,6 +2,19 @@
   remote_user: 'pi'
   become: true
   become_method: sudo
+  vars_prompt:
+    - name: new_pi_password
+      prompt: 'New password for the pi user (leave blank to keep the current one)'
+      private: true
+      confirm: true
+      unsafe: true
+      default: ''
+  pre_tasks:
+    - name: 'Hash the new pi user password'
+      set_fact:
+        new_pi_password_hash: "{{ new_pi_password | password_hash('sha512') }}"
+      no_log: true
+      when: new_pi_password | length > 0
   roles:
     - role: monmon
 
@@ -18,3 +31,17 @@
   become_method: sudo
   roles:
     - role: cleanup
+
+# Runs last, so the earlier plays can still connect with the current password
+- hosts: servers
+  remote_user: 'pi'
+  become: true
+  become_method: sudo
+  tasks:
+    - name: 'Set the new pi user password'
+      user:
+        name: 'pi'
+        password: '{{ new_pi_password_hash }}'
+        update_password: always
+      no_log: true
+      when: new_pi_password_hash is defined

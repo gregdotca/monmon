@@ -2,8 +2,10 @@
 
 ## 2026-10-24
 
+- Stop storing the Raspberry Pi's password in `ansible/inventory-install`. It held the old Raspberry Pi OS default for the `pi` user, which was public in this repository, kept every install on that default (changing it broke later deploys), and no longer works on Raspberry Pi OS releases since 2022, which don't ship a default password. `install.sh` now runs `ansible-playbook` with `--ask-pass`, so Ansible asks for the current password and never saves it.
+- Add an optional prompt to `ansible/install.yml` for a new `pi` password, typed twice and hidden, and taken literally even if it contains `{{` or `{%`; leave it blank to keep the current one. The new password is stored on the Pi as a SHA-512 hash, is never printed (`no_log`), and is set in a final play after the reboot, so the earlier plays can still connect with the current password. `install.sh` now also installs `python3-passlib`, which Ansible uses to make the hash.
+- Update `README.md`'s install steps: create a `pi` user with your own password and SSH turned on (instead of the old default credentials), what the two password prompts mean, and `--ask-pass` for running the playbook by hand.
 - Add `ACR.md`, an [AI Code Rating](https://aicoderating.com/) file (B1a) that says how much of monmon's code AI wrote and how it's checked, and an ACR badge under the title in `README.md`.
-
 - Stop `install.sh` from editing tracked files. It used to write the Pi's IP address and the display method into `ansible/inventory-install`, `ansible/roles/monmon/templates/nodes.j2`, and `ansible/group_vars/all.yml` with `sed`, which left the working tree changed after every install and could get those values committed by mistake. It now passes them to `ansible-playbook` as extra variables (`monmon_ip_address` and `installation_type`), and the inventory and the default Node file read them from there. `installation_type` now defaults to `none` in `group_vars/all.yml`.
 - Make `install.sh` check that the Pi's IP address is a valid IPv4 address, asking again until it is, and pass the extra variables to Ansible as JSON, so a mistyped address can't set other Ansible variables or break the command.
 - Document in `README.md` how to run the Ansible playbook by hand, with the two extra variables it now needs and the custom configuration files it expects in the `ansible` folder.

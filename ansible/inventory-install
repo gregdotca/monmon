@@ -7,9 +7,7 @@ monmon          ansible_host="{{ monmon_ip_address }}"           hostname=monmon
 [servers:vars]
 ansible_python_interpreter=/usr/bin/python3
 ansible_user=pi
-ansible_ssh_pass=raspberry
 
 [sites:vars]
 ansible_python_interpreter=/usr/bin/python3
 ansible_user=pi
-ansible_ssh_pass=raspberry
