@@ -116,9 +116,13 @@ instance of Monit running on your monmon Raspberry Pi, so it won't be very usefu
   install.sh. Neither password is stored in the repository or on your local system.
   - **NOTE:** The installation process needs [Ansible][] installed on the local system (the
   one you cloned the git repository to), as the entire monmon system is installed and
-  setup using Ansible. You don't need to install Ansible on your own though, the install
-  script will do that for you, though if the Ansible installation fails you may need to
-  [install it manually][].
+  setup using Ansible. You don't need to install Ansible on your own though. The install
+  script checks for Ansible and sshpass, and that Ansible can hash passwords (older
+  versions need the passlib Python library for this), and installs whatever's missing with
+  apt (Debian, Ubuntu, and so on) or pacman (Arch). On other
+  systems, or if the installation fails, it lists what's missing and stops, and you'll need
+  to [install it manually][] (on Arch the packages are ansible, sshpass, and
+  python-passlib; on Debian and Ubuntu, ansible, sshpass, and python3-passlib).
 - Further information will be given on-screen after the installation is complete
 - If you'd rather run the Ansible playbook yourself instead of using install.sh, first
 copy any custom configuration files you created into the `ansible` folder with the names

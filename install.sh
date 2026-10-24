@@ -57,15 +57,63 @@ then
 fi
 echo ""
 echo ""
-echo "# Update repositories on local system"
+echo "# Check for Ansible and prerequisites on local system"
+echo "# Needed: ansible, sshpass, and a way for Ansible to hash passwords (passlib)"
 echo ""
-sudo apt update
-echo ""
-echo ""
-echo "# Install Ansible and prerequisites on local system"
-echo "# Packages: ansible, sshpass, python3-passlib"
-echo ""
-sudo apt install ansible sshpass python3-passlib -y
+# Prints the missing tools as generic names: ansible, sshpass, passlib
+missing_tools() {
+  # Both commands come with Ansible; the hash check below needs the ansible one
+  { command -v ansible-playbook && command -v ansible; } >/dev/null 2>&1 || echo ansible
+  command -v sshpass >/dev/null 2>&1 || echo sshpass
+  # Ask Ansible itself to make a SHA-512 hash, as the playbook does. Newer Ansible can
+  # do this on its own; older versions need the passlib Python library.
+  if command -v ansible >/dev/null 2>&1
+  then
+    ansible localhost -i localhost, -c local -m debug \
+      -a "msg={{ 'test' | password_hash('sha512') }}" >/dev/null 2>&1 || echo passlib
+  fi
+}
+# Installs the given generic names with apt or pacman, if either is present
+install_tools() {
+  local packages
+  if command -v apt >/dev/null 2>&1
+  then
+    packages=$(echo "$@" | sed 's/passlib/python3-passlib/')
+    echo "# Installing with apt: $packages"
+    echo ""
+    sudo apt update && sudo apt install -y $packages
+  elif command -v pacman >/dev/null 2>&1
+  then
+    packages=$(echo "$@" | sed 's/passlib/python-passlib/')
+    echo "# Installing with pacman: $packages"
+    echo ""
+    sudo pacman -S --needed $packages
+  fi
+}
+missing=$(missing_tools)
+if [[ -z $missing ]]
+then
+  echo "Everything is already installed"
+else
+  install_tools $missing
+  # Ansible can only be checked for password hashing once it's installed
+  missing=$(missing_tools)
+  if [[ $missing == passlib ]]
+  then
+    install_tools passlib
+    missing=$(missing_tools)
+  fi
+  if [[ -n $missing ]]
+  then
+    echo ""
+    echo "These are still missing on your local system: $(echo $missing)
+
+Please install them with your package manager (on Debian/Ubuntu: ansible, sshpass, and
+python3-passlib; on Arch: ansible, sshpass, and python-passlib), then run install.sh again.
+passlib needs to be installed for the Python that Ansible uses."
+    exit 1
+  fi
+fi
 echo ""
 if [[ -f config ]]
 then
