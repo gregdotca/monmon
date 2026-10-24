@@ -2,14 +2,12 @@
 # COMMON
 ##############################################################################
 
-- name: 'Add signing keys by id from keyserver.ubuntu.com'
-  apt_key:
-    keyserver: keyserver.ubuntu.com
-    id: '{{ item }}'
-  with_items:
-    - '04EE7237B7D453EC' # Debian Buster backports, for Monit
-    - '648ACFD622F3D138' # Debian Buster backports, for Monit
-    - '6ED0E7B82643E131' # ?
+# Older versions of monmon added a Buster backports repo for Monit, which is no longer
+# needed and breaks apt on newer releases, so remove it before updating the repos
+- name: 'Remove the old Buster backports repo'
+  file:
+    path: /etc/apt/sources.list.d/buster-backports.list
+    state: absent
 
 - name: 'Update repos'
   apt:

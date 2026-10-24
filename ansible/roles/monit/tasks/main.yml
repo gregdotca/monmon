@@ -1,29 +1,10 @@
-# - name: 'Add the Debian Buster backports signing keys by id from keyserver.ubuntu.com'
-#   apt_key:
-#     keyserver: keyserver.ubuntu.com
-#     id: '{{ item }}'
-#   with_items:
-#     - '04EE7237B7D453EC'
-#     - '648ACFD622F3D138'
-
-- name: 'Check if /etc/apt/sources.list.d/buster-backports.list exists'
-  stat:
-    path: /etc/apt/sources.list.d/buster-backports.list
-  register: backports_file
-
-- name: "Create /etc/apt/sources.list.d/buster-backports.list"
+# Monit now comes from the OS's own repositories, so remove the Buster backports repo
+# that older versions of monmon added (the monmon role does this too, but the monit role
+# can also be run on its own)
+- name: 'Remove the old Buster backports repo'
   file:
     path: /etc/apt/sources.list.d/buster-backports.list
-    state: touch
-    mode: '644'
-    owner: 'root'
-    group: 'root'
-  when: backports_file.stat.exists == false
-
-- name: 'Make sure the Buster backports repo is in /etc/apt/sources.list.d/buster-backports.list'
-  lineinfile:
-    path: '/etc/apt/sources.list.d/buster-backports.list'
-    line: 'deb http://deb.debian.org/debian buster-backports main'
+    state: absent
 
 - name: 'Update repos'
   apt:
@@ -36,12 +17,11 @@
     upgrade: dist
     force_apt_get: yes
 
-- name: 'Install Monit from Buster backports'
+- name: 'Install Monit'
   apt:
     name:
     - monit
     state: present
-#    default_release: buster-backports
 
 - name: 'Check to see if the custom monit config file exists'
   stat:

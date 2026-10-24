@@ -143,7 +143,18 @@ password), and then for an optional new password for the pi user. Leave the new 
 blank to keep the current one. Neither password is saved anywhere on this system."
 echo ""
 cd ansible
-ansible-playbook --ask-pass -i ./inventory-install ./install.yml -e "{\"monmon_ip_address\": \"$ip_address\", \"installation_type\": \"$startup_type\"}"
+if ! ansible-playbook --ask-pass -i ./inventory-install ./install.yml -e "{\"monmon_ip_address\": \"$ip_address\", \"installation_type\": \"$startup_type\"}"
+then
+  echo ""
+  echo "The Ansible playbook failed (see the error above), so monmon isn't fully installed.
+
+None of the tasks after the one that failed were run. Setting a new password for the pi
+user is the very last task, so if the failure was anywhere before it, the pi user still
+has its current password. If the failure was in that last task (\"Set the new pi user
+password\"), the password may or may not have changed, so try both when you connect.
+Fix the problem and run install.sh again."
+  exit 1
+fi
 cd ..
 echo ""
 echo ""
