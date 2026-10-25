@@ -41,12 +41,14 @@ done
 echo ""
 echo ""
 echo "# Check for Ansible and prerequisites on local system"
-echo "# Needed: ansible, sshpass, and a way for Ansible to hash passwords (passlib)"
+echo "# Needed: ansible, ssh, sshpass, and a way for Ansible to hash passwords (passlib)"
 echo ""
-# Prints the missing tools as generic names: ansible, sshpass, passlib
+# Prints the missing tools as generic names: ansible, ssh, sshpass, passlib
 missing_tools() {
   # Both commands come with Ansible; the hash check below needs the ansible one
   { command -v ansible-playbook && command -v ansible; } >/dev/null 2>&1 || echo ansible
+  # The SSH client, which Ansible and the host key check below use
+  command -v ssh >/dev/null 2>&1 || echo ssh
   command -v sshpass >/dev/null 2>&1 || echo sshpass
   # Ask Ansible itself to make a SHA-512 hash, as the playbook does. Newer Ansible can
   # do this on its own; older versions need the passlib Python library.
@@ -61,13 +63,13 @@ install_tools() {
   local packages
   if command -v apt >/dev/null 2>&1
   then
-    packages=$(echo "$@" | sed 's/passlib/python3-passlib/')
+    packages=$(echo "$@" | sed 's/passlib/python3-passlib/; s/\bssh\b/openssh-client/')
     echo "# Installing with apt: $packages"
     echo ""
     sudo apt update && sudo apt install -y $packages
   elif command -v pacman >/dev/null 2>&1
   then
-    packages=$(echo "$@" | sed 's/passlib/python-passlib/')
+    packages=$(echo "$@" | sed 's/passlib/python-passlib/; s/\bssh\b/openssh/')
     echo "# Installing with pacman: $packages"
     echo ""
     sudo pacman -S --needed $packages
@@ -91,8 +93,9 @@ else
     echo ""
     echo "These are still missing on your local system: $(echo $missing)
 
-Please install them with your package manager (on Debian/Ubuntu: ansible, sshpass, and
-python3-passlib; on Arch: ansible, sshpass, and python-passlib), then run install.sh again.
+Please install them with your package manager (on Debian/Ubuntu: ansible, openssh-client,
+sshpass, and python3-passlib; on Arch: ansible, openssh, sshpass, and python-passlib), then
+run install.sh again.
 passlib needs to be installed for the Python that Ansible uses."
     exit 1
   fi

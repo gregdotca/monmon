@@ -117,12 +117,13 @@ instance of Monit running on your monmon Raspberry Pi, so it won't be very usefu
   - **NOTE:** The installation process needs [Ansible][] installed on the local system (the
   one you cloned the git repository to), as the entire monmon system is installed and
   setup using Ansible. You don't need to install Ansible on your own though. The install
-  script checks for Ansible and sshpass, and that Ansible can hash passwords (older
+  script checks for Ansible, the SSH client, and sshpass, and that Ansible can hash passwords (older
   versions need the passlib Python library for this), and installs whatever's missing with
   apt (Debian, Ubuntu, and so on) or pacman (Arch). On other
   systems, or if the installation fails, it lists what's missing and stops, and you'll need
-  to [install it manually][] (on Arch the packages are ansible, sshpass, and
-  python-passlib; on Debian and Ubuntu, ansible, sshpass, and python3-passlib).
+  to [install it manually][] (on Arch the packages are ansible, openssh,
+  sshpass, and python-passlib; on Debian and Ubuntu, ansible, openssh-client, sshpass, and
+  python3-passlib).
 - Further information will be given on-screen after the installation is complete
 - If you'd rather run the Ansible playbook yourself instead of using install.sh, first
 copy any custom configuration files you created into the `ansible` folder with the names
@@ -139,8 +140,10 @@ without it. If the username on the Pi isn't pi, also pass it with
 `-e "monmon_user=yourname"`. Before running it, put that user's
 current password in the `MONMON_PI_PASSWORD` environment variable, which the inventory
 uses for both SSH and sudo. To keep it out of your shell history, read it in without
-typing it on the command line, for example in bash:
+typing it on the command line. In bash:
 `IFS= read -rsp "Pi password: " MONMON_PI_PASSWORD; echo; export MONMON_PI_PASSWORD`.
+In zsh (the default shell on macOS), where `read -p` means something else:
+`IFS= read -rs "MONMON_PI_PASSWORD?Pi password: "; echo; export MONMON_PI_PASSWORD`.
 The playbook then asks for the optional new password. Ansible needs the Pi's SSH host
 key in `~/.ssh/known_hosts` first; logging in once with `ssh` and accepting the key does
 that.
