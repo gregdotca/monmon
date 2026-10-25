@@ -169,6 +169,8 @@
     path: 'config.custom.j2'
     follow: yes
   delegate_to: localhost
+  # Only checks a file on the local system, which needs no sudo there
+  become: false
   register: custom_config_file
 
 - name: 'Copy custom config file to /var/www/html'
@@ -194,6 +196,8 @@
     path: 'include.alert_off.custom.j2'
     follow: yes
   delegate_to: localhost
+  # Only checks a file on the local system, which needs no sudo there
+  become: false
   register: custom_include_alert_off_file
 
 - name: 'Copy custom include alert_off file to /var/www/html'
@@ -210,6 +214,8 @@
     path: 'include.alert_on.custom.j2'
     follow: yes
   delegate_to: localhost
+  # Only checks a file on the local system, which needs no sudo there
+  become: false
   register: custom_include_alert_on_file
 
 - name: 'Copy custom include alert_on file to /var/www/html'
@@ -226,6 +232,8 @@
     path: 'nodes.custom.j2'
     follow: yes
   delegate_to: localhost
+  # Only checks a file on the local system, which needs no sudo there
+  become: false
   register: custom_nodes_file
 
 - name: 'Copy custom nodes file to /var/www/html'

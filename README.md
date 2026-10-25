@@ -109,9 +109,9 @@ README for more information.
 - If you don't create a custom Node file, the only node that will be monitored is the
 instance of Monit running on your monmon Raspberry Pi, so it won't be very useful.
 - Run: `./install.sh` and follow the prompts
-  - Ansible will ask for the pi user's current password on the Raspberry Pi (the SSH
-  password), and then for an optional new password for the pi user, which you'll be asked
-  to type twice. Leave it blank to keep the current password. If you set a new one, it's
+  - You'll be asked for the pi user's current password on the Raspberry Pi, which Ansible
+  uses to log in and to run sudo, and then for an optional new password for the pi user,
+  which you'll be asked to type twice. Leave it blank to keep the current password. If you set a new one, it's
   changed at the very end of the install, so use the new password the next time you run
   install.sh. Neither password is stored in the repository or on your local system.
   - **NOTE:** The installation process needs [Ansible][] installed on the local system (the
@@ -132,10 +132,14 @@ the playbook looks for (`config` to `ansible/config.custom.j2`, `include.alert_o
 to `ansible/nodes.custom.j2`), as install.sh does. Then run the playbook from the
 `ansible` folder and pass the Pi's IP address and the HDMI display method
 (none, cli, or gui) as extra variables, for example:
-`ansible-playbook --ask-pass -i ./inventory-install ./install.yml -e "monmon_ip_address=192.168.1.50" -e "installation_type=none"`.
+`ansible-playbook -i ./inventory-install ./install.yml -e "monmon_ip_address=192.168.1.50" -e "installation_type=none"`.
 The IP address is required, and the playbook stops with an undefined variable error
-without it. The display method defaults to none. `--ask-pass` makes Ansible ask for the pi
-user's SSH password, and the playbook then asks for the optional new password.
+without it. The display method defaults to none. Before running it, put the pi user's
+current password in the `MONMON_PI_PASSWORD` environment variable, which the inventory
+uses for both SSH and sudo. To keep it out of your shell history, read it in without
+typing it on the command line, for example in bash:
+`IFS= read -rsp "pi password: " MONMON_PI_PASSWORD; echo; export MONMON_PI_PASSWORD`.
+The playbook then asks for the optional new password.
 
 # Configuration Files
 

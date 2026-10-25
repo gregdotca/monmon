@@ -28,6 +28,8 @@
     path: 'monit.custom.j2'
     follow: yes
   delegate_to: localhost
+  # Only checks a file on the local system, which needs no sudo there
+  become: false
   register: custom_monit_config_file
 
 - name: 'Copy custom monit config file to /etc/monit/monitrc'

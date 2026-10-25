@@ -1,3 +1,16 @@
-- name: 'Rebooting the Raspberry Pi'
-  reboot:
-    reboot_timeout: 300
+# One task, so it only needs sudo with the current password once, and the reboot is only
+# scheduled after the new password (if any) is set. Reboots a few seconds later without
+# waiting for the Pi to come back, so a slow boot can't fail the install.
+- name: 'Set the new pi user password and schedule a reboot'
+  shell: |
+    set -e
+    input=$(cat)
+    hash=${input#hash:}
+    if [ -n "$hash" ]; then
+      printf 'pi:%s\n' "$hash" | chpasswd -e
+    fi
+    systemd-run --on-active=5 systemctl reboot
+  args:
+    # Never empty, as Ansible doesn't send empty input and cat would wait forever
+    stdin: "hash:{{ new_pi_password_hash | default('') }}"
+  no_log: true

@@ -138,39 +138,51 @@ fi
 echo ""
 echo "# Run Ansible playbook to deploy monmon to Raspberry Pi"
 echo ""
-echo "Ansible will ask for the pi user's current password on your Raspberry Pi (SSH
-password), and then for an optional new password for the pi user. Leave the new password
-blank to keep the current one. Neither password is saved anywhere on this system."
+echo "You'll be asked for the pi user's current password on your Raspberry Pi, which
+Ansible uses to log in and to run sudo, and then for an optional new password for the pi
+user. Leave the new password blank to keep the current one. Neither password is saved
+anywhere on this system."
 echo ""
+while true; do
+    if ! IFS= read -rsp "Current password for the pi user: " pi_password; then
+        echo ""; exit 1
+    fi
+    echo ""
+    if [[ -n $pi_password ]]; then
+        break
+    fi
+    echo ""; echo "Please enter the pi user's current password"; echo ""
+done
+# The inventory reads it from here, for both SSH and sudo
+export MONMON_PI_PASSWORD="$pi_password"
+unset pi_password
 cd ansible
-if ! ansible-playbook --ask-pass -i ./inventory-install ./install.yml -e "{\"monmon_ip_address\": \"$ip_address\", \"installation_type\": \"$startup_type\"}"
+if ! ansible-playbook -i ./inventory-install ./install.yml -e "{\"monmon_ip_address\": \"$ip_address\", \"installation_type\": \"$startup_type\"}"
 then
   echo ""
   echo "The Ansible playbook failed (see the error above), so monmon isn't fully installed.
 
 None of the tasks after the one that failed were run. Setting a new password for the pi
-user is the very last task, so if the failure was anywhere before it, the pi user still
-has its current password. If the failure was in that last task (\"Set the new pi user
-password\"), the password may or may not have changed, so try both when you connect.
-Fix the problem and run install.sh again."
+user and scheduling the reboot is the very last task, so if the failure was anywhere
+before it, the pi user still has its current password. If the failure was in that last
+task (\"Set the new pi user password and schedule a reboot\"), the password may or may
+not have changed, so try both when you connect. Fix the problem and run install.sh
+again."
   exit 1
 fi
+unset MONMON_PI_PASSWORD
 cd ..
 echo ""
 echo ""
 echo "Installation complete!
 
-The monmon status page should be available at http://$ip_address
+Your Raspberry Pi is now rebooting to finish the install. It can take
+several minutes to come back up, especially on a Pi Zero.
+
+Once it's back up, the monmon status page should be available at http://$ip_address
 
 The Monit web UI should be available at http://$ip_address:2812
 
-In about 30 seconds, the screen attached to your Raspberry Pi should briefly turn green.
-When this happens, it means that monmon is up-and-running.
-
-If you installed one of the external HDMI display methods, and you see some red text
-above, you may need to re-run the install.sh script. When installing one of these
-methods, regardless of the Pi version, it sometimes takes so long that the password
-escalation times out later on in the Ansible playbook, causing the playbook to fail. It
-fails in a safe spot though, and re-running the install script (while entering the same
-details as the last time you ran it) will simply pickup where it left off."
+About 30 seconds after the Pi is back up, the screen attached to it should briefly turn
+green. When this happens, it means that monmon is up-and-running."
 echo ""

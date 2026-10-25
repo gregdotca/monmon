@@ -25,23 +25,11 @@
   roles:
     - role: monit
 
+# Runs last, so the earlier plays can still connect and use sudo with the current password
 - hosts: servers
   remote_user: 'pi'
   become: true
   become_method: sudo
+  gather_facts: false
   roles:
     - role: cleanup
-
-# Runs last, so the earlier plays can still connect with the current password
-- hosts: servers
-  remote_user: 'pi'
-  become: true
-  become_method: sudo
-  tasks:
-    - name: 'Set the new pi user password'
-      user:
-        name: 'pi'
-        password: '{{ new_pi_password_hash }}'
-        update_password: always
-      no_log: true
-      when: new_pi_password_hash is defined
