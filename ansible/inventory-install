@@ -6,12 +6,12 @@ monmon          ansible_host="{{ monmon_ip_address }}"           hostname=monmon
 
 [servers:vars]
 ansible_python_interpreter=/usr/bin/python3
-ansible_user=pi
+ansible_user="{{ monmon_user | default('pi') }}"
 ansible_password="{{ lookup('env', 'MONMON_PI_PASSWORD') }}"
 ansible_become_password="{{ lookup('env', 'MONMON_PI_PASSWORD') }}"
 
 [sites:vars]
 ansible_python_interpreter=/usr/bin/python3
-ansible_user=pi
+ansible_user="{{ monmon_user | default('pi') }}"
 ansible_password="{{ lookup('env', 'MONMON_PI_PASSWORD') }}"
 ansible_become_password="{{ lookup('env', 'MONMON_PI_PASSWORD') }}"

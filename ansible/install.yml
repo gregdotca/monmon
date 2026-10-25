@@ -1,25 +1,25 @@
 - hosts: servers
-  remote_user: 'pi'
   become: true
   become_method: sudo
   vars_prompt:
     - name: new_pi_password
-      prompt: 'New password for the pi user (leave blank to keep the current one)'
+      prompt: 'New password for the same user (leave blank to keep the current one)'
       private: true
       confirm: true
       unsafe: true
       default: ''
   pre_tasks:
-    - name: 'Hash the new pi user password'
+    # 5000 rounds is the Linux default. Ansible's own default is 656000, which makes every
+    # login and sudo on a Pi Zero take minutes while it checks the password.
+    - name: 'Hash the new user password'
       set_fact:
-        new_pi_password_hash: "{{ new_pi_password | password_hash('sha512') }}"
+        new_pi_password_hash: "{{ new_pi_password | password_hash('sha512', rounds=5000) }}"
       no_log: true
       when: new_pi_password | length > 0
   roles:
     - role: monmon
 
 - hosts: sites
-  remote_user: 'pi'
   become: true
   become_method: sudo
   roles:
@@ -27,7 +27,6 @@
 
 # Runs last, so the earlier plays can still connect and use sudo with the current password
 - hosts: servers
-  remote_user: 'pi'
   become: true
   become_method: sudo
   gather_facts: false

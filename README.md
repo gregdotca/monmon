@@ -89,8 +89,9 @@ browser on your network at http://\<your Pi's IP address\>
 
 # Installation
 - Flash Raspberry Pi OS lite 32-bit onto an SD card of at least 16GB
-  - Create a user named pi with a password of your choice and turn on SSH (Raspberry Pi
-  Imager's OS customisation settings can do both)
+  - Create a user with a username and password of your choice (such as pi; the install
+  accepts lowercase letters, digits, _ and -) and turn on SSH (Raspberry Pi Imager's OS
+  customisation settings can do both)
   - You can probably use other operating systems, but this is all that's been fully
   tested. The 64-bit version of Raspberry Pi OS should also work, though its performance
   on a Raspberry Pi Zero was not great. 
@@ -102,11 +103,17 @@ README for more information.
 - If you don't create a custom Node file, the only node that will be monitored is the
 instance of Monit running on your monmon Raspberry Pi, so it won't be very useful.
 - Run: `./install.sh` and follow the prompts
-  - You'll be asked for the pi user's current password on the Raspberry Pi, which Ansible
-  uses to log in and to run sudo, and then for an optional new password for the pi user,
-  which you'll be asked to type twice. Leave it blank to keep the current password. If you set a new one, it's
+  - You'll be asked for the username on the Raspberry Pi (press Enter for pi), then for
+  that user's current password, which Ansible uses to log in and to run sudo, and then for
+  an optional new password for the same user, which you'll be asked to type twice. Leave it blank to keep the current password. If you set a new one, it's
   changed at the very end of the install, so use the new password the next time you run
   install.sh. Neither password is stored in the repository or on your local system.
+  - Before running Ansible, install.sh checks the Raspberry Pi's SSH host key, since
+  Ansible won't log in with a password to a host it doesn't know. The first time, it has
+  SSH save the key (to `~/.ssh/known_hosts`, unless your SSH settings say otherwise) and
+  shows its fingerprint. If the key has changed since last time (for example after
+  reflashing the SD card), it stops and shows the `ssh-keygen` command that removes
+  the old key; run that only if you did reflash or replace the Pi.
   - **NOTE:** The installation process needs [Ansible][] installed on the local system (the
   one you cloned the git repository to), as the entire monmon system is installed and
   setup using Ansible. You don't need to install Ansible on your own though. The install
@@ -126,12 +133,15 @@ to `ansible/nodes.custom.j2`), as install.sh does. Then run the playbook from th
 `ansible` folder and pass the Pi's IP address as an extra variable, for example:
 `ansible-playbook -i ./inventory-install ./install.yml -e "monmon_ip_address=192.168.1.50"`.
 The IP address is required, and the playbook stops with an undefined variable error
-without it. Before running it, put the pi user's
+without it. If the username on the Pi isn't pi, also pass it with
+`-e "monmon_user=yourname"`. Before running it, put that user's
 current password in the `MONMON_PI_PASSWORD` environment variable, which the inventory
 uses for both SSH and sudo. To keep it out of your shell history, read it in without
 typing it on the command line, for example in bash:
-`IFS= read -rsp "pi password: " MONMON_PI_PASSWORD; echo; export MONMON_PI_PASSWORD`.
-The playbook then asks for the optional new password.
+`IFS= read -rsp "Pi password: " MONMON_PI_PASSWORD; echo; export MONMON_PI_PASSWORD`.
+The playbook then asks for the optional new password. Ansible needs the Pi's SSH host
+key in `~/.ssh/known_hosts` first; logging in once with `ssh` and accepting the key does
+that.
 
 # Configuration Files
 

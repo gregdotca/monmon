@@ -30,6 +30,16 @@ while true; do
 done
 echo ""
 echo ""
+while true; do
+    read -p "What is the username on your Raspberry Pi? (press Enter for pi): " pi_user
+    pi_user=${pi_user:-pi}
+    if [[ $pi_user =~ ^[a-z_][a-z0-9_-]{0,31}$ ]]; then
+        break
+    fi
+    echo ""; echo "Please enter a valid username (lowercase letters, digits, _ and -)"; echo ""
+done
+echo ""
+echo ""
 echo "# Check for Ansible and prerequisites on local system"
 echo "# Needed: ansible, sshpass, and a way for Ansible to hash passwords (passlib)"
 echo ""
@@ -109,36 +119,118 @@ then
   cp nodes ansible/nodes.custom.j2
 fi
 echo ""
+echo "# Check the Raspberry Pi's SSH host key"
+echo ""
+# Ansible won't log in with a password to a host whose key isn't known, and SSH refuses
+# one whose key has changed (such as after reflashing the SD card). SSH itself checks the
+# key here, so its own settings decide where known keys are kept. No login is attempted.
+ssh_probe() {
+  ssh -v -o BatchMode=yes -o PreferredAuthentications=none -o ConnectTimeout=10 \
+    -o ControlMaster=no -o ControlPath=none "$@" "$pi_user@$ip_address" true 2>&1
+}
+# The fingerprint of the key the Raspberry Pi presented, from SSH's own output
+server_key() {
+  tr -d '\r' <<< "$1" | grep -o "Server host key: .*" | head -1 | cut -d' ' -f4-
+}
+# The name SSH stores the key under: a HostKeyAlias if its settings set one, otherwise
+# the host name it connects to, as [name]:port when the port isn't 22
+ssh_settings=$(ssh -G "$pi_user@$ip_address" 2>/dev/null)
+key_name=$(awk '$1 == "hostkeyalias" {print $2}' <<< "$ssh_settings")
+if [[ -z $key_name ]]
+then
+  key_name=$(awk '$1 == "hostname" {print $2}' <<< "$ssh_settings")
+  key_name=${key_name:-$ip_address}
+  key_port=$(awk '$1 == "port" {print $2}' <<< "$ssh_settings")
+  if [[ -n $key_port && $key_port != 22 ]]
+  then
+    key_name="[$key_name]:$key_port"
+  fi
+fi
+host_check=$(ssh_probe -o StrictHostKeyChecking=yes)
+host_check_status=$?
+if [[ $host_check == *"REMOTE HOST IDENTIFICATION HAS CHANGED"* ]]
+then
+  echo "The SSH host key of $ip_address has changed since this system last connected to it.
+
+If you've reflashed the Raspberry Pi's SD card (or replaced the Pi), that's expected.
+Remove the old key with the command below, then run install.sh again:
+"
+  # SSH names the known hosts file that holds the old key, which may not be the default
+  key_file=$(tr -d '\r' <<< "$host_check" | sed -n 's/^Offending .* key in \(.*\):[0-9]*$/\1/p' | head -1)
+  if [[ -n $key_file ]]
+  then
+    echo "  ssh-keygen -f $(printf '%q' "$key_file") -R $(printf '%q' "$key_name")"
+  else
+    echo "  ssh-keygen -R $(printf '%q' "$key_name")"
+  fi
+  echo "
+If you haven't, don't run it: something else may be answering at that address."
+  exit 1
+elif [[ $host_check == *"Host key verification failed"* ]]
+then
+  # A Raspberry Pi this system hasn't connected to before: lets SSH save its key where
+  # SSH's settings say, as answering yes to its own prompt would
+  ssh_probe -o StrictHostKeyChecking=accept-new > /dev/null
+  # Then checks strictly that the key was saved
+  host_check=$(ssh_probe -o StrictHostKeyChecking=yes)
+  host_check_status=$?
+  if [[ $host_check == *"Host key verification failed"* ||
+        ( $host_check_status -ne 0 && $host_check != *": Permission denied ("* ) ]]
+  then
+    echo "Couldn't save the SSH host key of $ip_address:"
+    echo ""
+    grep -v '^debug' <<< "$host_check"
+    exit 1
+  fi
+  echo "This system hasn't connected to $ip_address over SSH before, so its host key has
+been saved:"
+  echo ""
+  echo "  $(server_key "$host_check")"
+elif [[ $host_check_status -ne 0 && $host_check != *": Permission denied ("* ]]
+then
+  echo "Couldn't connect to $ip_address over SSH:"
+  echo ""
+  grep -v '^debug' <<< "$host_check"
+  echo ""
+  echo "Check that the Raspberry Pi is on, connected to your network, and has SSH turned
+on, then run install.sh again."
+  exit 1
+else
+  echo "The Raspberry Pi's host key matches the one saved on this system"
+fi
+echo ""
+echo ""
 echo "# Run Ansible playbook to deploy monmon to Raspberry Pi"
 echo ""
-echo "You'll be asked for the pi user's current password on your Raspberry Pi, which
-Ansible uses to log in and to run sudo, and then for an optional new password for the pi
-user. Leave the new password blank to keep the current one. Neither password is saved
-anywhere on this system."
+echo "You'll be asked for the current password of the $pi_user user on your Raspberry Pi,
+which Ansible uses to log in and to run sudo, and then for an optional new password for
+that user. Leave the new password blank to keep the current one. Neither password is
+saved anywhere on this system."
 echo ""
 while true; do
-    if ! IFS= read -rsp "Current password for the pi user: " pi_password; then
+    if ! IFS= read -rsp "Current password for the $pi_user user: " pi_password; then
         echo ""; exit 1
     fi
     echo ""
     if [[ -n $pi_password ]]; then
         break
     fi
-    echo ""; echo "Please enter the pi user's current password"; echo ""
+    echo ""; echo "Please enter the $pi_user user's current password"; echo ""
 done
 # The inventory reads it from here, for both SSH and sudo
 export MONMON_PI_PASSWORD="$pi_password"
 unset pi_password
+echo ""
 cd ansible
-if ! ansible-playbook -i ./inventory-install ./install.yml -e "{\"monmon_ip_address\": \"$ip_address\"}"
+if ! ansible-playbook -i ./inventory-install ./install.yml -e "{\"monmon_ip_address\": \"$ip_address\", \"monmon_user\": \"$pi_user\"}"
 then
   echo ""
   echo "The Ansible playbook failed (see the error above), so monmon isn't fully installed.
 
-None of the tasks after the one that failed were run. Setting a new password for the pi
-user and scheduling the reboot is the very last task, so if the failure was anywhere
-before it, the pi user still has its current password. If the failure was in that last
-task (\"Set the new pi user password and schedule a reboot\"), the password may or may
+None of the tasks after the one that failed were run. Setting a new password for the
+$pi_user user and scheduling the reboot is the very last task, so if the failure was
+anywhere before it, that user still has its current password. If the failure was in that
+last task (\"Set the new user password and schedule a reboot\"), the password may or may
 not have changed, so try both when you connect. Fix the problem and run install.sh
 again."
   exit 1
