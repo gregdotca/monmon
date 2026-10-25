@@ -30,33 +30,6 @@ while true; do
 done
 echo ""
 echo ""
-echo "NOTE: Both the GUI and CLI methods mentioned below are experimental"
-echo ""
-echo "monmon has a very minimal status page built-in, and in addition to having the 
-Waveshare 1.3\" display flash when there's an issue with one of your Monit instances,
-you can also (optionally) hookup an external HDMI display to the Pi and have it load
-the monmon status page automatically at boot.
-
-If you have no intention of hooking up an external HDMI display, then simply enter none
-and ignore the rest of this text.
-
-If you want to go with the GUI display method, type gui and the PIXEL desktop
-environment will be installed and automatically loaded at boot, with the monmon Status
-Page loading in the lightweight Midori web browser. Although this method is technically
-possible, it's still pretty heavy for a Pi Zero 2 and below. Both the RAM and Swap
-are going to be maxed or near maxed pretty much all the time.
-
-If you want to go with the CLI display method, no actual GUI will be installed, and
-instead the text-based Lynx web browser will load the monmon status page at boot."
-echo ""
-read -p "Enter the external HDMI display method (none/cli/gui): " startup_type_input
-startup_type=${startup_type_input,,} # Lower-case the startup type input
-if [[ $startup_type != 'cli' && $startup_type != 'gui' ]]
-then
-  startup_type=none
-fi
-echo ""
-echo ""
 echo "# Check for Ansible and prerequisites on local system"
 echo "# Needed: ansible, sshpass, and a way for Ansible to hash passwords (passlib)"
 echo ""
@@ -157,7 +130,7 @@ done
 export MONMON_PI_PASSWORD="$pi_password"
 unset pi_password
 cd ansible
-if ! ansible-playbook -i ./inventory-install ./install.yml -e "{\"monmon_ip_address\": \"$ip_address\", \"installation_type\": \"$startup_type\"}"
+if ! ansible-playbook -i ./inventory-install ./install.yml -e "{\"monmon_ip_address\": \"$ip_address\"}"
 then
   echo ""
   echo "The Ansible playbook failed (see the error above), so monmon isn't fully installed.

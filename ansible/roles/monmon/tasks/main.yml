@@ -25,18 +25,6 @@
     name: ['curl', 'git', 'nginx', 'php-curl', 'php-fpm', 'php-xml', 'python3-numpy', 'python3-pil', 'python3-requests', 'python3-rpi.gpio', 'python3-spidev', 'python3-xmltodict', 'ttf-wqy-zenhei']
     force_apt_get: 'yes'
 
-- name: 'Install software packages via apt (cli)'
-  apt:
-    name: ['lynx']
-    force_apt_get: 'yes'
-  when: installation_type == 'cli'
-
-- name: 'Install software packages via apt (gui)'
-  apt:
-    name: ['xserver-xorg', 'raspberrypi-ui-mods', 'lightdm', 'midori']
-    force_apt_get: 'yes'
-  when: installation_type == 'gui'
-
 - name: 'Copy nginx config file'
   template:
     src: 'nginx.http.conf.j2'
@@ -50,72 +38,6 @@
   command: '{{ item }}'
   with_items:
     - 'raspi-config nonint do_spi 0' # Enable SPI interface (for certain display hats)
-
-##############################################################################
-# CLI INSTALLATION METHOD
-##############################################################################
-
-- name: 'Enable CLI auto-login (cli)'
-  command: '{{ item }}'
-  with_items:
-    - 'raspi-config nonint do_boot_behaviour B2' # Enable auto-login CLI
-  when: installation_type == 'cli'
-
-- name: "Update ~/.bashrc (cli)"
-  lineinfile:
-    path: '/home/pi/.bashrc'
-    line: 'echo ""; echo "monmon will start once the Raspberry Pi is fully booted..."; echo ""; sleep 30; echo ""; {{ cli_initialization_command }}'
-  when: installation_type == 'cli'
-
-##############################################################################
-# GUI INSTALLATION METHOD
-##############################################################################
-
-- name: "Create ~/.config/midori -- pi (gui)"
-  file:
-    path: '/home/pi/.config/midori'
-    state: directory
-    owner: 'pi'
-    group: 'pi'
-    mode: 0755
-  when: installation_type == 'gui'
-
-- name: 'Copy Midori config file to /home/greg/.config/midori/config (gui)'
-  template:
-    src: 'midori-config.j2'
-    dest: '/home/pi/.config/midori/config'
-    owner: 'pi'
-    group: 'pi'
-    mode: '0644'
-  when: installation_type == 'gui'
-
-- name: "Create /etc/xdg/lxsession/LXDE-pi/autostart -- pi (gui)"
-  file:
-    path: '{{ item }}'
-    state: directory
-    owner: 'root'
-    group: 'root'
-    mode: 0755
-  with_items:
-    - '/etc/xdg'
-    - '/etc/xdg/lxsession'
-    - '/etc/xdg/lxsession/LXDE-pi'
-  when: installation_type == 'gui'
-
-- name: 'Copy Pixel GUI autostart file to /etc/xdg/lxsession/LXDE-pi/autostart (gui)'
-  template:
-    src: 'pixel-autostart.j2'
-    dest: '/etc/xdg/lxsession/LXDE-pi/autostart'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  when: installation_type == 'gui'
-
-- name: 'Set some raspi-config settings (gui)'
-  command: '{{ item }}'
-  with_items:
-    - 'raspi-config nonint do_boot_behaviour B4' # Enable auto-login GUI
-  when: installation_type == 'gui'
 
 ##############################################################################
 # COMMON

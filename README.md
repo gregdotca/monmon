@@ -8,7 +8,7 @@
 - [Supported Providers](#supported-providers)
 - [Requirements](#requirements)
 - [Tools](#tools)
-- [Installation Types](#installation-types)
+- [Alerts and the Status Page](#alerts-and-the-status-page)
 - [Installation](#installation)
 - [Configuration Files](#configuration-files)
   * [Node File](#node-file)
@@ -26,8 +26,8 @@
 
 monmon is a simple [Raspberry Pi][]-based monitoring tool that keeps an eye on your existing
 monitoring systems and lets you know if any of your nodes need attention. If there's an
-issue, the screen attached to your Raspberry Pi will start to flash. Optionally, you can
-connect an HDMI display to the Pi and have it show the monmon status page.
+issue, the screen attached to your Raspberry Pi will start to flash. You can also open the
+monmon status page in any web browser on your network.
 
 monmon connects to your existing monitoring systems (*see the list of Supported Providers
 below*), and checks to see if there are any issues, anywhere, if the there are, the
@@ -82,17 +82,10 @@ _Ignore the video quality, it's absolutely awful!_
   - The ability to solder (hellooo YouTube!)
   - If you don't want to solder, you could also look into hammer headers
 
-# Installation Types
-1) Flashing Waveshare 1.3" LCD  
-***or***
-2) External HDMI Display (CLI or GUI)  
-   -- The CLI method uses the lynx text-based web browser  
-   -- The GUI method uses the Midori web browser within the PIXEL desktop environment  
-***or***
-3) Both  
-***or***
-4) Neither
-   - But then, you know, what's the point?
+# Alerts and the Status Page
+- The Waveshare 1.3" LCD attached to the Pi flashes when one of your nodes has an issue
+- The monmon status page, with its colours and blinking alerts, can be viewed in any web
+browser on your network at http://\<your Pi's IP address\>
 
 # Installation
 - Flash Raspberry Pi OS lite 32-bit onto an SD card of at least 16GB
@@ -130,11 +123,10 @@ the playbook looks for (`config` to `ansible/config.custom.j2`, `include.alert_o
 `ansible/include.alert_off.custom.j2`, `include.alert_on` to
 `ansible/include.alert_on.custom.j2`, `monit` to `ansible/monit.custom.j2`, and `nodes`
 to `ansible/nodes.custom.j2`), as install.sh does. Then run the playbook from the
-`ansible` folder and pass the Pi's IP address and the HDMI display method
-(none, cli, or gui) as extra variables, for example:
-`ansible-playbook -i ./inventory-install ./install.yml -e "monmon_ip_address=192.168.1.50" -e "installation_type=none"`.
+`ansible` folder and pass the Pi's IP address as an extra variable, for example:
+`ansible-playbook -i ./inventory-install ./install.yml -e "monmon_ip_address=192.168.1.50"`.
 The IP address is required, and the playbook stops with an undefined variable error
-without it. The display method defaults to none. Before running it, put the pi user's
+without it. Before running it, put the pi user's
 current password in the `MONMON_PI_PASSWORD` environment variable, which the inventory
 uses for both SSH and sudo. To keep it out of your shell history, read it in without
 typing it on the command line, for example in bash:
