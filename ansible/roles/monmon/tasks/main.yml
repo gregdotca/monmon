@@ -22,7 +22,7 @@
 
 - name: 'Install software packages via apt (common)'
   apt:
-    name: ['curl', 'git', 'nginx', 'php-curl', 'php-fpm', 'php-xml', 'python3-numpy', 'python3-pil', 'python3-pip', 'ttf-wqy-zenhei']
+    name: ['curl', 'git', 'nginx', 'php-curl', 'php-fpm', 'php-xml', 'python3-numpy', 'python3-pil', 'python3-requests', 'python3-rpi.gpio', 'python3-spidev', 'python3-xmltodict', 'ttf-wqy-zenhei']
     force_apt_get: 'yes'
 
 - name: 'Install software packages via apt (cli)'
@@ -36,11 +36,6 @@
     name: ['xserver-xorg', 'raspberrypi-ui-mods', 'lightdm', 'midori']
     force_apt_get: 'yes'
   when: installation_type == 'gui'
-
-- name: 'Install Python packages via pip'
-  pip:
-    name: ['RPi.GPIO', 'spidev', 'xmltodict']
-    state: present
 
 - name: 'Copy nginx config file'
   template:
