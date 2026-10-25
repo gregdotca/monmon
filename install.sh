@@ -98,26 +98,38 @@ passlib needs to be installed for the Python that Ansible uses."
   fi
 fi
 echo ""
-if [[ -f config ]]
-then
-  cp config ansible/config.custom.j2
-fi
-if [[ -f include.alert_off ]]
-then
-  cp include.alert_off ansible/include.alert_off.custom.j2
-fi
-if [[ -f include.alert_on ]]
-then
-  cp include.alert_on ansible/include.alert_on.custom.j2
-fi
-if [[ -f monit ]]
-then
-  cp monit ansible/monit.custom.j2
-fi
-if [[ -f nodes ]]
-then
-  cp nodes ansible/nodes.custom.j2
-fi
+# Copies your custom files for Ansible. An old copy is removed when you've deleted its file,
+# but only if install.sh made it, so templates you put in the ansible folder yourself stay.
+staged_list=ansible/.install-staged
+for custom_file in config include.alert_off include.alert_on monit nodes
+do
+  if [[ -f $custom_file ]]
+  then
+    # Listed before copying, so a cancelled run still knows install.sh made the copy
+    if ! grep -qxF "$custom_file" "$staged_list" 2>/dev/null
+    then
+      echo "$custom_file" >> "$staged_list" || exit 1
+    fi
+    cp "$custom_file" "ansible/$custom_file.custom.j2" || exit 1
+  elif grep -qxF "$custom_file" "$staged_list" 2>/dev/null
+  then
+    if ! rm -f "ansible/$custom_file.custom.j2"
+    then
+      echo ""
+      echo "Couldn't remove ansible/$custom_file.custom.j2, the copy of your deleted $custom_file
+file. Remove it yourself, then run install.sh again."
+      exit 1
+    fi
+  fi
+done
+# Replaces the list in one step with the copies install.sh made this time
+for custom_file in config include.alert_off include.alert_on monit nodes
+do
+  if [[ -f $custom_file ]]
+  then
+    echo "$custom_file"
+  fi
+done > "$staged_list.new" && mv "$staged_list.new" "$staged_list" || exit 1
 echo ""
 echo "# Check the Raspberry Pi's SSH host key"
 echo ""

@@ -129,7 +129,9 @@ copy any custom configuration files you created into the `ansible` folder with t
 the playbook looks for (`config` to `ansible/config.custom.j2`, `include.alert_off` to
 `ansible/include.alert_off.custom.j2`, `include.alert_on` to
 `ansible/include.alert_on.custom.j2`, `monit` to `ansible/monit.custom.j2`, and `nodes`
-to `ansible/nodes.custom.j2`), as install.sh does. Then run the playbook from the
+to `ansible/nodes.custom.j2`), as install.sh does. (install.sh keeps the copies it makes in step with
+the files in the main folder, removing any whose file you've deleted; files you put in the
+`ansible` folder yourself are left alone.) Then run the playbook from the
 `ansible` folder and pass the Pi's IP address as an extra variable, for example:
 `ansible-playbook -i ./inventory-install ./install.yml -e "monmon_ip_address=192.168.1.50"`.
 The IP address is required, and the playbook stops with an undefined variable error

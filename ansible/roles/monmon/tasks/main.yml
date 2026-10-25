@@ -113,6 +113,13 @@
     mode: '0644'
   when: not custom_config_file.stat.exists
 
+# An earlier install may have left one, which would still be used
+- name: 'Remove any old custom config file'
+  file:
+    path: '/var/www/html/config.custom'
+    state: absent
+  when: not custom_config_file.stat.exists
+
 - name: 'Check to see if the custom alert_off include file exists'
   stat:
     path: 'include.alert_off.custom.j2'
@@ -131,6 +138,13 @@
     mode: '0644'
   when: custom_include_alert_off_file.stat.exists
 
+# An earlier install may have left one, which would still be used
+- name: 'Remove any old custom include alert_off file'
+  file:
+    path: '/var/www/html/include.alert_off'
+    state: absent
+  when: not custom_include_alert_off_file.stat.exists
+
 - name: 'Check to see if the custom alert_on include file exists'
   stat:
     path: 'include.alert_on.custom.j2'
@@ -148,6 +162,13 @@
     group: 'root'
     mode: '0644'
   when: custom_include_alert_on_file.stat.exists
+
+# An earlier install may have left one, which would still be used
+- name: 'Remove any old custom include alert_on file'
+  file:
+    path: '/var/www/html/include.alert_on'
+    state: absent
+  when: not custom_include_alert_on_file.stat.exists
 
 - name: 'Check to see if the custom nodes file exists'
   stat:
@@ -174,6 +195,13 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
+  when: not custom_nodes_file.stat.exists
+
+# An earlier install may have left one, which would still be used
+- name: 'Remove any old custom nodes file'
+  file:
+    path: '/var/www/html/nodes.custom'
+    state: absent
   when: not custom_nodes_file.stat.exists
 
 - name: 'Install the BCM 2835 and WiringPi GPIO libraries'

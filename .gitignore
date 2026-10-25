@@ -6,3 +6,5 @@ __pycache__
 /include.alert_on
 /monit
 /nodes
+/ansible/*.custom.j2
+/ansible/.install-staged*

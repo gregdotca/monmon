@@ -93,14 +93,15 @@ def get_args():
     parser.add_argument(
         "-n",
         "--nodes",
-        default="nodes.custom",
-        help="Custom Node file",
+        default="nodes.custom" if os.path.isfile("nodes.custom") else "nodes",
+        help="Node file (nodes.custom if it exists, otherwise nodes)",
         metavar="nodes",
         type=str,
     )
 
     args = parser.parse_args()
 
+    node_list = []
     if os.path.isfile(args.nodes):
         with open(args.nodes) as node_rows:
             node_list = node_rows.readlines()
