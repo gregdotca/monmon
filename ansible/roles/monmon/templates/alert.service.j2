@@ -2,6 +2,8 @@
 Description=Service for alert.py
 
 [Service]
-Type=oneshot
+# alert.py runs until the Pi shuts down, so it's a simple service rather than a oneshot,
+# which systemd would wait on forever and never count the boot as finished
+Type=simple
 ExecStart=/usr/bin/python3 /var/www/html/alert.py
 WorkingDirectory=/var/www/html

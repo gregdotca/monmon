@@ -1,5 +1,9 @@
 [Unit]
 Description=Service for check.py
+# Don't check until the network is up after a boot (and the Pi's own Monit is ready), or
+# nodes show as down when they aren't
+Wants=check-boot-delay.service
+After=check-boot-delay.service
 
 [Service]
 Type=oneshot

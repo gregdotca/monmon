@@ -6,3 +6,6 @@
   service:
     name: nginx
     state: restarted
+
+- name: run ldconfig
+  command: 'ldconfig'

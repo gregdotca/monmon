@@ -1,6 +1,6 @@
 # monmon - Monitor your monitoring with a Raspberry Pi
 
-[![ACR B1a](https://img.shields.io/badge/ACR-B1a-2140B5)](ACR.md)
+[![ACR B2a](https://img.shields.io/badge/ACR-B2a-2140B5)](ACR.md)
 
 - [What is monmon and what does it do?](#what-is-monmon-and-what-does-it-do)
 - [Why did you create monmon?](#why-did-you-create-monmon)
@@ -74,7 +74,9 @@ _Ignore the video quality, it's absolutely awful!_
   - 16+ GB SD Card 
   - Power cable
   - Headers (if you're using a Pi Zero that doesn't have existing headers)
-- [Raspberry Pi OS Lite 32-bit ISO image][]
+- [Raspberry Pi OS Lite 32-bit ISO image][], version 12 (bookworm) or 13 (trixie)
+  - Version 11 (bullseye) and older aren't supported, as they're no longer supported by
+  Debian
   - [Waveshare 1.3" LCD Hat][]
 
 # Tools

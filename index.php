@@ -8,7 +8,11 @@ header("refresh: 10; url = " . $_SERVER['PHP_SELF']);
 
 $are_there_issues = 0;
 
-if (file_exists('alerts')) {
+// check.py leaves this file after each run. /run is emptied at every boot, so it's only
+// missing until the first check.py run after a boot
+$has_checked = file_exists('/run/monmon-checked');
+
+if ($has_checked && file_exists('alerts')) {
 
     $are_there_issues = 1;
     $background_colour = '#FFFFFF';
@@ -51,7 +55,11 @@ if (file_exists('alerts')) {
 </head>
 <body>
 <?php
-if ($are_there_issues === 0) {
+if (!$has_checked) {
+
+    echo '<span style="color: grey;">Starting...</span>';
+
+} elseif ($are_there_issues === 0) {
 
     echo '<span style="color: green;">ALL SYSTEMS GO!<span>';
 

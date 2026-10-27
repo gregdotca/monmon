@@ -12,6 +12,9 @@ from PIL import Image, ImageDraw, ImageFont
 from waveshare import LCD_1inch3
 
 alerts_filename = "alerts"
+# check.py leaves this file after each run. /run is emptied at every boot, so it's only
+# missing until the first check.py run after a boot
+checked_filename = "/run/monmon-checked"
 config = configparser.ConfigParser()
 
 if os.path.exists("config.custom"):
@@ -24,6 +27,8 @@ else:
 
 polling_interval = int(config["c"]["polling_interval"])
 check_text = config["c"]["check_text"]
+# Older custom config files don't have starting_text
+starting_text = config["c"].get("starting_text", "Starting...")
 check_text_colour = config["c"]["check_text_colour"]
 startup_colour = config["c"]["startup_colour"]
 background_colour = config["c"]["background_colour"]
@@ -75,6 +80,15 @@ def show_check_text():
     return
 
 
+def show_starting_text():
+
+    image_starting = Image.new("RGB", (disp.width, disp.height), background_colour)
+    draw_starting = ImageDraw.Draw(image_starting)
+    draw_starting.text((63, 95), starting_text, font=Font, fill=check_text_colour)
+    disp.ShowImage(image_starting)
+    return
+
+
 def show_waiting_screen():
 
     image_base_waiting = Image.new("RGB", (disp.width, disp.height), background_colour)
@@ -95,6 +109,15 @@ def show_warning():
     time.sleep(0.15)
     return
 
+
+# Nothing has been checked yet after a boot until check.py's first run, so keep the
+# starting text on the screen until then instead of looking for alerts
+if not os.path.isfile(checked_filename):
+
+    show_starting_text()
+
+    while not os.path.isfile(checked_filename):
+        time.sleep(1)
 
 while True:
 

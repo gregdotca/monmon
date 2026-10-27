@@ -204,14 +204,102 @@
     state: absent
   when: not custom_nodes_file.stat.exists
 
-- name: 'Install the BCM 2835 and WiringPi GPIO libraries'
-  shell:
-    cmd: '/var/www/html/library-install.sh'
+# Older versions of monmon built the BCM 2835 and WiringPi C libraries here, which nothing
+# uses, so remove the source and build files an earlier install left behind
+- name: 'Remove the old BCM 2835 and WiringPi library folders'
+  file:
+    path: '{{ item }}'
+    state: absent
+  with_items:
+    - '/var/www/html/BCM2835'
+    - '/var/www/html/WiringPi'
+
+# The libraries themselves, whose file names include the WiringPi version
+- name: 'Find the old BCM 2835 and WiringPi libraries'
+  find:
+    paths: '/usr/local/lib'
+    patterns: ['libbcm2835.a', 'libwiringPi.*', 'libwiringPiDev.*']
+    file_type: any
+  register: old_gpio_libraries
+
+- name: 'Remove the old BCM 2835 and WiringPi libraries'
+  file:
+    path: '{{ item.path }}'
+    state: absent
+  with_items: '{{ old_gpio_libraries.files }}'
+  notify: run ldconfig
+
+# Everything else the old builds installed: the BCM 2835 and WiringPi headers, WiringPi's
+# setuid gpio tool and its man page, and the links WiringPi made in /usr/lib (which its own
+# uninstall leaves behind)
+- name: 'Remove the old BCM 2835 and WiringPi files'
+  file:
+    path: '{{ item }}'
+    state: absent
+  with_items:
+    - '/usr/local/include/bcm2835.h'
+    - '/usr/local/include/ads1115.h'
+    - '/usr/local/include/bmp180.h'
+    - '/usr/local/include/drcNet.h'
+    - '/usr/local/include/drcSerial.h'
+    - '/usr/local/include/ds18b20.h'
+    - '/usr/local/include/htu21d.h'
+    - '/usr/local/include/max31855.h'
+    - '/usr/local/include/max5322.h'
+    - '/usr/local/include/mcp23008.h'
+    - '/usr/local/include/mcp23016.h'
+    - '/usr/local/include/mcp23016reg.h'
+    - '/usr/local/include/mcp23017.h'
+    - '/usr/local/include/mcp23s08.h'
+    - '/usr/local/include/mcp23s17.h'
+    - '/usr/local/include/mcp23x0817.h'
+    - '/usr/local/include/mcp23x08.h'
+    - '/usr/local/include/mcp3002.h'
+    - '/usr/local/include/mcp3004.h'
+    - '/usr/local/include/mcp3422.h'
+    - '/usr/local/include/mcp4802.h'
+    - '/usr/local/include/pcf8574.h'
+    - '/usr/local/include/pcf8591.h'
+    - '/usr/local/include/pseudoPins.h'
+    - '/usr/local/include/rht03.h'
+    - '/usr/local/include/sn3218.h'
+    - '/usr/local/include/softPwm.h'
+    - '/usr/local/include/softServo.h'
+    - '/usr/local/include/softTone.h'
+    - '/usr/local/include/sr595.h'
+    - '/usr/local/include/wiringPi.h'
+    - '/usr/local/include/wiringPiI2C.h'
+    - '/usr/local/include/wiringPiSPI.h'
+    - '/usr/local/include/wiringSerial.h'
+    - '/usr/local/include/wiringShift.h'
+    - '/usr/local/include/wpiExtensions.h'
+    - '/usr/local/include/ds1302.h'
+    - '/usr/local/include/gertboard.h'
+    - '/usr/local/include/lcd128x64.h'
+    - '/usr/local/include/lcd.h'
+    - '/usr/local/include/maxdetect.h'
+    - '/usr/local/include/piFace.h'
+    - '/usr/local/include/piGlow.h'
+    - '/usr/local/include/piNes.h'
+    - '/usr/local/include/scrollPhat.h'
+    - '/usr/local/bin/gpio'
+    - '/usr/local/share/man/man1/gpio.1'
+    - '/usr/lib/libwiringPi.so'
+    - '/usr/lib/libwiringPiDev.so'
+  notify: run ldconfig
 
 - name: 'Copy check.py systemd service unit file to /etc/systemd/system'
   template:
     src: 'check.service.j2'
     dest: '/etc/systemd/system/check.service'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+
+- name: 'Copy the check.py boot delay systemd service unit file to /etc/systemd/system'
+  template:
+    src: 'check-boot-delay.service.j2'
+    dest: '/etc/systemd/system/check-boot-delay.service'
     owner: 'root'
     group: 'root'
     mode: '0644'
@@ -236,6 +324,14 @@
   template:
     src: 'alert.timer.j2'
     dest: '/etc/systemd/system/alert.timer'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+
+- name: 'Copy the monmon tmpfiles config to /etc/tmpfiles.d'
+  template:
+    src: 'tmpfiles.conf.j2'
+    dest: '/etc/tmpfiles.d/monmon.conf'
     owner: 'root'
     group: 'root'
     mode: '0644'

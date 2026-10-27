@@ -15,6 +15,8 @@ from requests.auth import HTTPBasicAuth
 # Global variables
 alert_report = []
 alerts_filename = "alerts"
+# Tells alert.py that a check has run since the Pi booted (/run is emptied at every boot)
+checked_filename = "/run/monmon-checked"
 alert_off_include_filename = "include.alert_off"
 alert_on_include_filename = "include.alert_on"
 
@@ -73,11 +75,13 @@ def main():
     if not alert_report:
 
         delete_alerts()
+        mark_checked()
         alert_off_includes()
 
     else:
 
         write_alerts()
+        mark_checked()
         alert_on_includes()
 
 
@@ -289,6 +293,19 @@ def delete_alerts():
 
         print("ERROR :: Unable to delete the alerts file")
         exit()
+
+    return
+
+
+def mark_checked():
+
+    try:
+
+        open(checked_filename, "w").close()
+
+    except:
+
+        print("ERROR :: Unable to write the checked file")
 
     return
 
