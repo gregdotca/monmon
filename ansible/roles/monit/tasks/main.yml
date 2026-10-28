@@ -1,22 +1,5 @@
-# Monit now comes from the OS's own repositories, so remove the Buster backports repo
-# that older versions of monmon added (the monmon role does this too, but the monit role
-# can also be run on its own)
-- name: 'Remove the old Buster backports repo'
-  file:
-    path: /etc/apt/sources.list.d/buster-backports.list
-    state: absent
-
-- name: 'Update repos'
-  apt:
-    update_cache: yes
-    force_apt_get: true
-    cache_valid_time: 3600
-
-- name: 'Upgrade packages'
-  apt:
-    upgrade: dist
-    force_apt_get: yes
-
+# Runs after the monmon role, which removes the old Buster backports repo, updates the
+# repos, and upgrades the packages first
 - name: 'Install Monit'
   apt:
     name:

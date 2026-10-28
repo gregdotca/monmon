@@ -18,14 +18,9 @@
       when: new_pi_password | length > 0
   roles:
     - role: monmon
-
-- hosts: sites
-  become: true
-  become_method: sudo
-  roles:
     - role: monit
 
-# Runs last, so the earlier plays can still connect and use sudo with the current password
+# Runs last, so the earlier play can still connect and use sudo with the current password
 - hosts: servers
   become: true
   become_method: sudo

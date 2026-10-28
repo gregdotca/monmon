@@ -263,6 +263,8 @@ Once it's back up, the monmon status page should be available at http://$ip_addr
 
 The Monit web UI should be available at http://$ip_address:2812
 
-About 30 seconds after the Pi is back up, the screen attached to it should briefly turn
-green. When this happens, it means that monmon is up-and-running."
+About a minute after the Pi is back up, the screen attached to it should briefly turn
+green, which means that monmon is up-and-running. It then shows \"Starting...\" (as does
+the status page) until the first check of your nodes has finished, and after that it
+briefly shows \"Checking...\" every few seconds while it looks for alerts."
 echo ""

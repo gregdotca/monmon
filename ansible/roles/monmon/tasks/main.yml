@@ -34,14 +34,15 @@
     mode: '0644'
   notify: restart nginx
 
-- name: 'Enable SPI kernel support'
-  command: '{{ item }}'
-  with_items:
-    - 'raspi-config nonint do_spi 0' # Enable SPI interface (for certain display hats)
+# raspi-config prints 0 when SPI is already enabled
+- name: 'Check whether SPI kernel support is enabled'
+  command: 'raspi-config nonint get_spi'
+  register: spi_status
+  changed_when: false
 
-##############################################################################
-# COMMON
-##############################################################################
+- name: 'Enable SPI kernel support'
+  command: 'raspi-config nonint do_spi 0' # Enable SPI interface (for certain display hats)
+  when: spi_status.stdout | trim != '0'
 
 - name: "Create /var/www/html dir"
   file:
@@ -59,11 +60,6 @@
 - name: 'Delete default 502.html'
   file:
     path: '/var/www/html/502.html'
-    state: absent
-
-- name: 'Delete default index.html'
-  file:
-    path: '/var/www/html/index.html'
     state: absent
 
 - name: 'Delete default index.nginx-debian.html'
@@ -357,12 +353,3 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-
-- name: 'Set hostname'
-  hostname:
-    name: 'monmon'
-
-- name: 'Add monmon to /etc/hosts'
-  lineinfile:
-    path: '/etc/hosts'
-    line: '127.0.0.1    monmon'

@@ -94,6 +94,8 @@ browser on your network at http://\<your Pi's IP address\>
   - Create a user with a username and password of your choice (such as pi; the install
   accepts lowercase letters, digits, _ and -) and turn on SSH (Raspberry Pi Imager's OS
   customisation settings can do both)
+  - The install doesn't change the Pi's hostname, so set the one you want here too (such
+  as monmon). Newer versions of Raspberry Pi OS set it from these settings at every boot
   - You can probably use other operating systems, but this is all that's been fully
   tested. The 64-bit version of Raspberry Pi OS should also work, though its performance
   on a Raspberry Pi Zero was not great. 
