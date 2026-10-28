@@ -332,6 +332,14 @@
     group: 'root'
     mode: '0644'
 
+- name: 'Copy the CPU performance systemd service unit file to /etc/systemd/system'
+  template:
+    src: 'cpu-performance.service.j2'
+    dest: '/etc/systemd/system/cpu-performance.service'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+
 - name: 'Reload systemd daemon'
   systemd:
     daemon_reload: yes
@@ -345,6 +353,31 @@
   systemd:
     name: alert.timer
     enabled: yes
+
+# Takes effect at the reboot that ends the install
+- name: 'Enable the CPU performance systemd service'
+  systemd:
+    name: cpu-performance.service
+    enabled: yes
+
+# monmon is always plugged in, so Wi-Fi power saving only gets in the way: it delays or
+# drops incoming connections. Takes effect at the reboot that ends the install, as
+# restarting NetworkManager now could cut off Ansible's own connection
+- name: 'Create /etc/NetworkManager/conf.d dir'
+  file:
+    path: '/etc/NetworkManager/conf.d'
+    state: directory
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: 'Copy the NetworkManager config file that turns off Wi-Fi power saving'
+  template:
+    src: 'wifi-powersave.conf.j2'
+    dest: '/etc/NetworkManager/conf.d/monmon-wifi-powersave.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
 
 - name: 'Copy motd file'
   template:

@@ -1,0 +1,15 @@
+[Unit]
+Description=Run the CPU at full speed
+# monmon is always plugged in, so the CPU doesn't need to slow down when idle. Skipped on
+# a kernel without CPU frequency scaling, and a CPU without the performance governor is
+# only logged, so neither fails the unit
+ConditionPathExists=/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+
+[Service]
+Type=oneshot
+# $$ stops systemd from filling in the shell's $cpu itself
+ExecStart=/bin/sh -c 'for cpu in /sys/devices/system/cpu/cpu*/cpufreq; do if grep -qw performance "$$cpu/scaling_available_governors"; then echo performance > "$$cpu/scaling_governor"; else echo "No performance governor in $$cpu"; fi; done'
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

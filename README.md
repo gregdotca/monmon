@@ -128,6 +128,11 @@ instance of Monit running on your monmon Raspberry Pi, so it won't be very usefu
   to [install it manually][] (on Arch the packages are ansible, openssh,
   sshpass, and python-passlib; on Debian and Ubuntu, ansible, openssh-client, sshpass, and
   python3-passlib).
+- Since monmon is always plugged in, the install turns off the Pi's power saving: Wi-Fi
+power saving, which can delay or drop connections to the Pi (such as the status page), and
+CPU frequency scaling, so the CPU always runs at full speed. Both take effect when the Pi
+reboots at the end of the install. A Wi-Fi connection that has its own power saving
+setting (in NetworkManager) keeps that setting.
 - Further information will be given on-screen after the installation is complete
 - If you'd rather run the Ansible playbook yourself instead of using install.sh, first
 copy any custom configuration files you created into the `ansible` folder with the names
