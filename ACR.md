@@ -6,7 +6,7 @@ updated: 2026-10-27
 
 # AI Code Rating
 
-**ACR B2a** (Maintainer: Experienced · AI Share: 26–50% · Oversight: Verified)
+**[ACR B2a](https://aicoderating.com/B2a/)** (Maintainer: Experienced · AI Share: 26–50% · Oversight: Verified)
 
 This project is rated with [AI Code Rating](https://aicoderating.com/spec/0.1/), spec version 0.1.
 

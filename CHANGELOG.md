@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-11
+
+- Link the rating in `ACR.md` to its page on aicoderating.com.
+
 ## 2026-10-28
 
 - Turn off the Raspberry Pi's power saving, since monmon is always plugged in. Wi-Fi power saving was on, and on a Pi Zero W it made connections to the Pi time out: about one ping in six was lost and replies took up to 1.5 seconds, so the status page and SSH often failed to load or connect. The install now adds `/etc/NetworkManager/conf.d/monmon-wifi-powersave.conf` (from the new template `wifi-powersave.conf.j2`), which turns Wi-Fi power saving off for every connection that doesn't set its own. It also adds a new `cpu-performance.service` (from `cpu-performance.service.j2`), which sets every CPU to the `performance` governor at boot, so the CPU always runs at full speed instead of slowing down when idle. On a kernel without CPU frequency scaling the service is skipped, and a CPU without the `performance` governor is noted in the service's log instead of failing it. Both take effect at the reboot that ends the install, since restarting NetworkManager during the install could cut off Ansible's own Wi-Fi connection. `README.md` describes both, and notes that a Wi-Fi connection with its own power saving setting keeps it.
